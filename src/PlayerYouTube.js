@@ -1,5 +1,5 @@
-import Player from './Player.js';
-import loadExternalJs from './functions.js';
+var Player = require('@adinan-cenci/js-multimedia-player').Player;
+var loadExternalJs = require('@adinan-cenci/js-multimedia-player/src/functions.js').loadExternalJs;
 
 class PlayerYouTube extends Player 
 {
@@ -17,7 +17,6 @@ class PlayerYouTube extends Player
 
         this.wrapper        = null;
         this.data           = null;
-        this.sdkReady       = false;
         this.playerReady    = false;
         this.ytPlayer       = null;
         this.volume         = 100;
@@ -38,7 +37,11 @@ class PlayerYouTube extends Player
     {
         this.data = data;
 
-        if (! this.sdkReady) {
+        if (data.href) {            
+            data.id = data.href.match(/v=([A-Za-z0-9-_]+)/)[1];
+        }
+
+        if (! PlayerYouTube.sdkLoaded) {
             return this.setupSdk().then(() =>
             {
                 return this.setData(data);
@@ -50,13 +53,15 @@ class PlayerYouTube extends Player
 
         if (this.playerReady) {
             this.ytPlayer.loadVideoById(this.data.id);
-            return;
+            return new Promise((success, fail) =>
+            {
+                success(this);
+            });
         }
 
         return this.initializePlayer().then(() =>
         {
             this.playerReady = true;
-            this.play();
         });
     }
 
@@ -95,8 +100,8 @@ class PlayerYouTube extends Player
         this.deployRootDiv();
         return this.loadSdk().then(m =>
         {
-            console.log(m);
-            this.sdkReady = true;
+            this.log(m);
+            PlayerYouTube.sdkLoaded = true;
         }, m => 
         {
             this.callBackOnError(m);
@@ -151,8 +156,8 @@ class PlayerYouTube extends Player
             var gxi     = this;
 
             if (this.settings.width == 'auto') {
-                width = this.wrapper.offsetWidth;
-                height = width / 1.77;
+                width     = this.wrapper.offsetWidth;
+                height    = width / 1.77;
             }
 
             this.ytPlayer = new YT.Player(gxi.settings.embbedId, 
@@ -161,12 +166,12 @@ class PlayerYouTube extends Player
                 height          : height,
                 videoId         : gxi.data.id, 
                 startSeconds    : 0, 
-                playerVars      : { 'autoplay': 1, 'controls': 1 }, 
+                playerVars      : { autoplay: 1, controls: 1 }, 
                 events          : 
                 {
                     onReady(event) 
                     {
-                        success('PLAYER: ready');
+                        success(gxi);
                         gxi.callBackOnReady(event);
                     },
                     onStateChange: gxi.callBackOnStateChange.bind(gxi),
@@ -304,6 +309,7 @@ class PlayerYouTube extends Player
     }
 }
 
+PlayerYouTube.sdkLoaded = false;
 PlayerYouTube.prototype.defaults = 
 {
     wrapperId   : 'youtube-wrapper', 
@@ -312,4 +318,4 @@ PlayerYouTube.prototype.defaults =
     height      : 360
 };
 
-export default PlayerYouTube;
+module.exports.PlayerYouTube = PlayerYouTube;

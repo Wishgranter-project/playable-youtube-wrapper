@@ -4,52 +4,7 @@
         <meta charset="UTF-8">
         <title>YouTube</title>
         <link rel="stylesheet" href="stylesheet.css" />
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script type="module">
-        import PlayerYouTube from '../src/PlayerYouTube.js';
-        $(document).ready(function() 
-        {
-            window.player                       = new PlayerYouTube({width: 'auto'});
-            window.currentTime                  = $('#current-time')[0];
-            window.remainingTime                = $('#remaining-time')[0];
-            window.progressBar                  = $('#progress-bar')[0];
-
-            window.player.onTimeupdate          = function() 
-            {
-                window.currentTime.innerHTML    = this.currentTimer;
-                window.remainingTime.innerHTML  = this.remainingTimer;
-                window.progressBar.value        = this.currentPercentage;
-            }
-
-            $('#toggle-play-payse').click(window.player.toggle.bind(window.player));
-
-            $('#media-list a').click(function(e) 
-            {
-                e.preventDefault();
-                var id = this.attributes.href.value.match(/v=([A-Za-z0-9-_]+)/)[1];
-                window.player.setData({id:id});
-
-                $('#title').html($(this).find('.title').html());
-                $('#artist').html($(this).find('.artist').html());
-            });
-
-            $(window.progressBar).click(function(e) 
-            {
-                var x, width, perc;
-                x               = e.clientX - this.offsetLeft;
-                width           = this.offsetWidth;
-                perc            = Math.ceil((x / width) * 100)+'%';
-                
-                window.player.setCurrentTime(perc)
-            });
-
-            $('#volume-slider').change(function() {
-                var v = parseInt($(this).val());
-                window.player.setVolume(v);
-            });
-
-        });
-        </script>
+        <script src="1-main-bundle.js"></script>
     </head>
     <body>
         <div id="media-player">

@@ -1,1 +1,1 @@
-This is the interface for multi media players.
+This is a wrapper for the YouTube embed api.
