@@ -1,13 +1,13 @@
-var PlayerYouTube = require('../src/PlayerYouTube.js').PlayerYouTube;
+var PlayerYouTube = require('../src/PlayerYouTube.js');
 
-document.addEventListener('DOMContentLoaded', function() 
+document.addEventListener('DOMContentLoaded', function()
 {
-    window.player                       = new PlayerYouTube({width: 'auto'});
+    window.player                       = new PlayerYouTube({width: 'auto', wrapperId: 'youtube-wrapper'});
     window.currentTime                  = document.getElementById('current-time');
     window.remainingTime                = document.getElementById('remaining-time');
     window.progressBar                  = document.getElementById('progress-bar');
 
-    window.player.onTimeupdate          = function() 
+    window.player.onTimeupdate          = function()
     {
         window.currentTime.innerHTML    = this.currentTimer;
         window.remainingTime.innerHTML  = this.remainingTimer;
@@ -16,9 +16,9 @@ document.addEventListener('DOMContentLoaded', function()
 
     document.getElementById('toggle-play-payse').addEventListener('click', window.player.toggle.bind(window.player));
 
-    document.querySelectorAll('#media-list a').forEach(function(a) 
+    document.querySelectorAll('#media-list a').forEach(function(a)
     {
-        a.addEventListener('click', function(e) 
+        a.addEventListener('click', function(e)
         {
             e.preventDefault();
             window.player.setData({href:this.attributes.href.value}).then(() => {
@@ -30,17 +30,17 @@ document.addEventListener('DOMContentLoaded', function()
         });
     });
 
-    document.getElementById('progress-bar').addEventListener('click', function(e) 
+    document.getElementById('progress-bar').addEventListener('click', function(e)
     {
         var x, width, perc;
         x               = e.clientX - this.offsetLeft;
         width           = this.offsetWidth;
         perc            = Math.ceil((x / width) * 100)+'%';
-        
+
         window.player.setCurrentTime(perc)
     });
 
-    document.getElementById('volume-slider').addEventListener('change', function() 
+    document.getElementById('volume-slider').addEventListener('change', function()
     {
         var v = parseInt(this.value);
         window.player.setVolume(v);

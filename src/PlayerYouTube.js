@@ -1,9 +1,9 @@
-var Player = require('@adinan-cenci/js-multimedia-player').Player;
-var loadExternalJs = require('@adinan-cenci/js-multimedia-player/src/functions.js').loadExternalJs;
+var Player = require('multimedia-player');
+var loadExternalJs = require('multimedia-player/src/functions.js').loadExternalJs;
 
-class PlayerYouTube extends Player 
+class PlayerYouTube extends Player
 {
-    constructor(settings = null) 
+    constructor(settings = null)
     {
         super();
 
@@ -22,9 +22,23 @@ class PlayerYouTube extends Player
         this.volume         = 100;
         this.follower       = null;     // time interval
         this.currentTime    = 0;
+
+        PlayerYouTube.count ++;
+
+        if (! this.settings.wrapperId) {
+            this.settings.wrapperId = 'youtube-wrapper'+PlayerYouTube.count;
+        }
+
+        if (! this.settings.embbedId) {
+            this.settings.embbedId = 'youtube-embbeded'+PlayerYouTube.count;
+        }
+
+        console.log(this.settings);
+
+        this.deployRootDiv();
     }
 
-    get duration() 
+    get duration()
     {
         if (this.ytPlayer && this.ytPlayer.getDuration) {
             return this.ytPlayer.getDuration();
@@ -33,22 +47,28 @@ class PlayerYouTube extends Player
         return 0;
     }
 
-    async setData(data) 
+    async setData(data)
     {
         this.data = data;
+        var promisse;
 
-        if (data.href) {            
+        if (data.href) {
             data.id = data.href.match(/v=([A-Za-z0-9-_]+)/)[1];
         }
 
         if (! PlayerYouTube.sdkLoaded) {
-            return this.setupSdk().then(() =>
+
+            promisse = PlayerYouTube.sdkPromisse = PlayerYouTube.sdkPromisse ?
+                PlayerYouTube.sdkPromisse :
+                this.loadSdk();
+
+            return promisse.then(() =>
             {
+                PlayerYouTube.sdkLoaded = true;
                 return this.setData(data);
             });
         }
 
-        //this.reset();
         this.startFollowing();
 
         if (this.playerReady) {
@@ -65,7 +85,7 @@ class PlayerYouTube extends Player
         });
     }
 
-    play(time = null) 
+    play(time = null)
     {
         if (time) {
             this.setCurrentTime(time);
@@ -73,42 +93,29 @@ class PlayerYouTube extends Player
         this.ytPlayer.playVideo();
     }
 
-    pause() 
+    pause()
     {
         this.ytPlayer.pauseVideo();
     }
 
-    setCurrentTime(time) 
+    setCurrentTime(time)
     {
         var seconds = this.sanitizeGetSeconds(time);
         this.ytPlayer.seekTo(seconds, true)
     }
 
-    setVolume(vol) 
+    setVolume(vol)
     {
         this.volume = vol;
         this.ytPlayer.setVolume(vol);
     }
 
-    cuePlaylist(id, index = null, startSeconds = 0, suggestedQuality = null) 
+    cuePlaylist(id, index = null, startSeconds = 0, suggestedQuality = null)
     {
         this.ytPlayer.cuePlaylist(id);
-    } 
-
-    async setupSdk() 
-    {
-        this.deployRootDiv();
-        return this.loadSdk().then(m =>
-        {
-            this.log(m);
-            PlayerYouTube.sdkLoaded = true;
-        }, m => 
-        {
-            this.callBackOnError(m);
-        });
     }
 
-    reset() 
+    reset()
     {
         this.stopFollowing();
         if (! this.ytPlayer) {
@@ -119,7 +126,7 @@ class PlayerYouTube extends Player
         this.ytPlayer = null;
     }
 
-    deployRootDiv() 
+    deployRootDiv()
     {
         var youtubeDiv, w;
         w = document.getElementById(this.settings.wrapperId);
@@ -137,7 +144,7 @@ class PlayerYouTube extends Player
         this.wrapper.append(youtubeDiv);
     }
 
-    async loadSdk() 
+    async loadSdk()
     {
         return new Promise((success, fail) =>
         {
@@ -147,9 +154,9 @@ class PlayerYouTube extends Player
         });
     }
 
-    async initializePlayer() 
+    async initializePlayer()
     {
-        return new Promise((success, fail) => 
+        return new Promise((success, fail) =>
         {
             var width   = this.settings.width;
             var height  = this.settings.height;
@@ -160,24 +167,24 @@ class PlayerYouTube extends Player
                 height    = width / 1.77;
             }
 
-            this.ytPlayer = new YT.Player(gxi.settings.embbedId, 
+            this.ytPlayer = new YT.Player(gxi.settings.embbedId,
             {
                 width           : width,
                 height          : height,
-                videoId         : gxi.data.id, 
-                startSeconds    : 0, 
-                playerVars      : { autoplay: 1, controls: 1 }, 
-                events          : 
+                videoId         : gxi.data.id,
+                startSeconds    : 0,
+                playerVars      : { autoplay: 1, controls: 1 },
+                events          :
                 {
-                    onReady(event) 
+                    onReady(event)
                     {
                         success(gxi);
                         gxi.callBackOnReady(event);
                     },
                     onStateChange: gxi.callBackOnStateChange.bind(gxi),
-                    onError(errorCode) 
+                    onError(errorCode)
                     {
-                        switch (errorCode) 
+                        switch (errorCode)
                         {
                             case 2:
                                 gxi.log('Error 2: parametros invalidos.');
@@ -204,12 +211,12 @@ class PlayerYouTube extends Player
 
     /*-------------------*/
 
-    startFollowing() 
+    startFollowing()
     {
         this.follower = setInterval(this.following.bind(this), 1000);
     }
 
-    stopFollowing() 
+    stopFollowing()
     {
         clearInterval(this.follower);
     }
@@ -217,7 +224,7 @@ class PlayerYouTube extends Player
     following()
     {
         var t = this.ytPlayer && this.ytPlayer.getCurrentTime ? this.ytPlayer.getCurrentTime() : 0;
-        
+
         if (t != this.currentTime) {
             this.currentTime = t;
             this.callBackOnTimeupdate();
@@ -226,13 +233,13 @@ class PlayerYouTube extends Player
 
     /*-------------------*/
 
-    callBackOnReady(event) 
+    callBackOnReady(event)
     {
         this.setVolume(this.volume);
         this.onReady(event);
     }
 
-    callBackOnStateChange(e) 
+    callBackOnStateChange(e)
     {
         /*
         -1 = não iniciado
@@ -250,7 +257,7 @@ class PlayerYouTube extends Player
                 this.log('State change: -1 unstarted');
                 this.reproducing    = false;
                 this.playing        = false;
-                this.paused         = false;            
+                this.paused         = false;
             break;
             case 0: /* encerrado */
                 this.log('State change: 0 ended');
@@ -270,52 +277,52 @@ class PlayerYouTube extends Player
                 this.log('State change: 2 paused');
                 this.reproducing    = false;
                 this.playing        = false;
-                this.paused         = true;            
+                this.paused         = true;
             break;
             case 3:
                 this.log('State change: 3 buffering');
                 this.reproducing    = false;
                 this.playing        = true;
-                this.paused         = false;            
+                this.paused         = false;
             break;
             case 5:
                 this.log('State change: 5 video cued');
                 this.play(0)
             break;
         }
-        
+
         this.onStateChange(code);
     }
 
-    callBackOnError(error) 
+    callBackOnError(error)
     {
         this.onError(error);
     }
 
-    callbackOnReproducing() 
+    callbackOnReproducing()
     {
         this.startFollowing();
     }
 
-    callBackOnEnded() 
+    callBackOnEnded()
     {
         this.stopFollowing();
         this.onEnded();
     }
 
-    callBackOnTimeupdate() 
+    callBackOnTimeupdate()
     {
         this.onTimeupdate();
     }
 }
 
+PlayerYouTube.sdkPromisse = null;
 PlayerYouTube.sdkLoaded = false;
-PlayerYouTube.prototype.defaults = 
+PlayerYouTube.count = 0;
+PlayerYouTube.prototype.defaults =
 {
-    wrapperId   : 'youtube-wrapper', 
-    embbedId    : 'youtube-embbeded', 
-    width       : 640, 
+    width       : 640,
     height      : 360
 };
 
-module.exports.PlayerYouTube = PlayerYouTube;
+module.exports = PlayerYouTube;
