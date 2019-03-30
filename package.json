@@ -2,7 +2,7 @@
   "name": "youtube-wrapper",
   "version": "1.0.0",
   "description": "This is a wrapper for the YouTube embed api.",
-  "main": "index.js",
+  "main": "src/PlayerYouTube.js",
   "directories": {
     "example": "examples"
   },
@@ -15,7 +15,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/adinan-cenci/js-youtube-wrapper/issues"
   },
