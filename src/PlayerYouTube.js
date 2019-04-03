@@ -22,6 +22,7 @@ class PlayerYouTube extends Player
         this.volume         = 100;
         this.follower       = null;     // time interval
         this.currentTime    = 0;
+        this.deployed       = false;
 
         PlayerYouTube.count ++;
 
@@ -34,8 +35,6 @@ class PlayerYouTube extends Player
         }
 
         console.log(this.settings);
-
-        this.deployRootDiv();
     }
 
     get duration()
@@ -49,6 +48,8 @@ class PlayerYouTube extends Player
 
     async setData(data)
     {
+        this.deployRootDiv();
+
         this.data = data;
         var promisse;
 
@@ -128,6 +129,10 @@ class PlayerYouTube extends Player
 
     deployRootDiv()
     {
+        if (this.deployed) {
+            return true;
+        }
+
         var youtubeDiv, w;
         w = document.getElementById(this.settings.wrapperId);
         if (w) {
@@ -142,6 +147,7 @@ class PlayerYouTube extends Player
         youtubeDiv.id       = this.settings.embbedId;
 
         this.wrapper.append(youtubeDiv);
+        this.deployed = true;
     }
 
     async loadSdk()
