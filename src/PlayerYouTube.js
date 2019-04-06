@@ -56,6 +56,8 @@ class PlayerYouTube extends Player
         if (data.href) {
             data.id = data.href.match(/v=([A-Za-z0-9-_]+)/)[1];
         }
+        
+        this.waiting = true;
 
         if (! PlayerYouTube.sdkLoaded) {
 
