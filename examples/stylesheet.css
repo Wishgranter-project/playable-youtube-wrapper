@@ -57,7 +57,7 @@ input[type=range]::-ms-track {
     width: 100%;
     border-color: transparent;
     color: transparent;
-    background: transparent; 
+    background: transparent;
 }
 
 input[type=range]::-webkit-slider-thumb {
@@ -162,10 +162,25 @@ input[type=range]::-moz-range-track {
     #status {
         padding: 10px;
     }
-    
+
         #title {
+            position: relative;
             font-size: 20px;
             line-height: 1em;
+        }
+
+        .waiting #title:after {
+            display: inline-block;
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+            width: 1em;
+            height: 1em;
+            margin: auto auto auto 10px;
+            content: '';
+            background-image: url(loading.gif);
+            background-repeat: no-repeat;
+            background-size: 100%;
         }
 
         #artist {
@@ -185,10 +200,8 @@ input[type=range]::-moz-range-track {
                 margin: 0px 10px;
             }
 
-            #current-time, 
+            #current-time,
             #remaining-time {
                 width: 40px;
                 text-align: center;
             }
-
-    

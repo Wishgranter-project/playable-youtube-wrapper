@@ -3,6 +3,7 @@ var PlayerYouTube = require('../src/PlayerYouTube.js');
 document.addEventListener('DOMContentLoaded', function()
 {
     window.player                       = new PlayerYouTube({width: 'auto', wrapperId: 'youtube-wrapper'});
+    window.mediaPlayer                  = document.getElementById('media-player');
     window.currentTime                  = document.getElementById('current-time');
     window.remainingTime                = document.getElementById('remaining-time');
     window.progressBar                  = document.getElementById('progress-bar');
@@ -12,6 +13,15 @@ document.addEventListener('DOMContentLoaded', function()
         window.currentTime.innerHTML    = this.currentTimer;
         window.remainingTime.innerHTML  = this.remainingTimer;
         window.progressBar.value        = this.currentPercentage;
+    }
+
+    window.player.onStateChange         = function(code)
+    {
+        if (this.waiting) {
+            window.mediaPlayer.classList.add('waiting');
+        } else {
+            window.mediaPlayer.classList.remove('waiting');
+        }
     }
 
     document.getElementById('toggle-play-payse').addEventListener('click', window.player.toggle.bind(window.player));

@@ -25,7 +25,6 @@
     "webpack-cli": "^3.2.3"
   },
   "dependencies": {
-    "@adinan-cenci/js-multimedia-player": "^1.0.0",
     "multimedia-player": "github:adinan-cenci/js-multimedia-player"
   }
 }

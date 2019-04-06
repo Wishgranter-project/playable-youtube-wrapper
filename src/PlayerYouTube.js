@@ -269,7 +269,8 @@ class PlayerYouTube extends Player
                 this.log('State change: 0 ended');
                 this.reproducing    = false;
                 this.playing        = false;
-                this.paused         = false;
+                this.paused         = true;
+                this.waiting        = false;
                 this.callBackOnEnded();
             break;
             case 1:
@@ -277,6 +278,8 @@ class PlayerYouTube extends Player
                 this.reproducing    = true;
                 this.playing        = true;
                 this.paused         = false;
+                this.buffering      = false;
+                this.waiting        = false;
                 this.callbackOnReproducing();
             break;
             case 2:
@@ -284,12 +287,15 @@ class PlayerYouTube extends Player
                 this.reproducing    = false;
                 this.playing        = false;
                 this.paused         = true;
+                this.waiting        = false;
             break;
             case 3:
                 this.log('State change: 3 buffering');
                 this.reproducing    = false;
                 this.playing        = true;
                 this.paused         = false;
+                this.buffering      = true;
+                this.waiting        = true;
             break;
             case 5:
                 this.log('State change: 5 video cued');
