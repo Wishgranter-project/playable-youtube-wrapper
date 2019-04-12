@@ -56,7 +56,7 @@ class PlayerYouTube extends Player
         if (data.href) {
             data.id = data.href.match(/v=([A-Za-z0-9-_]+)/)[1];
         }
-        
+
         this.waiting = true;
 
         if (! PlayerYouTube.sdkLoaded) {
@@ -181,6 +181,7 @@ class PlayerYouTube extends Player
                 height          : height,
                 videoId         : gxi.data.id,
                 startSeconds    : 0,
+                host:           'https://www.youtube.com',
                 playerVars      : { autoplay: 1, controls: 1 },
                 events          :
                 {
