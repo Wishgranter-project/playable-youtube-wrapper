@@ -2,11 +2,15 @@ var PlayerYouTube = require('../src/PlayerYouTube.js');
 
 document.addEventListener('DOMContentLoaded', function()
 {
-    window.player                       = new PlayerYouTube({width: 'auto', wrapperId: 'youtube-wrapper'});
     window.mediaPlayer                  = document.getElementById('media-player');
     window.currentTime                  = document.getElementById('current-time');
     window.remainingTime                = document.getElementById('remaining-time');
     window.progressBar                  = document.getElementById('progress-bar');
+    window.logWindow                    = document.querySelector('#log div');
+
+    //--------------------
+
+    window.player                       = new PlayerYouTube({width: 'auto', wrapperId: 'youtube-wrapper'});
 
     window.player.onPlay                = function()
     {
@@ -47,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function()
         log(errorMessage);
     }
 
+    //--------------------
 
     document.getElementById('toggle-play-pause').addEventListener('click', window.player.toggle.bind(window.player));
 
@@ -55,7 +60,8 @@ document.addEventListener('DOMContentLoaded', function()
         a.addEventListener('click', function(e)
         {
             e.preventDefault();
-            window.player.setData({href:this.attributes.href.value}).then(() => {
+            window.player.setData({href:this.attributes.href.value}).then(() =>
+            {
                 window.player.play();
             });
 
@@ -85,5 +91,5 @@ function log(msg)
 {
     var p = document.createElement('p');
     p.innerHTML = msg;
-    document.querySelector('#log div').append(p)
+    window.logWindow.append(p)
 }

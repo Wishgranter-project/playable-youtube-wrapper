@@ -1,5 +1,5 @@
-var Player          = require('multimedia-player');
-var loadExternalJs  = require('multimedia-player/src/functions.js').loadExternalJs;
+var Player          = require('multimedia-player-interface');
+var loadExternalJs  = require('multimedia-player-interface/src/functions.js').loadExternalJs;
 
 class PlayerYouTube extends Player
 {
@@ -113,6 +113,10 @@ class PlayerYouTube extends Player
 
     seek(time)
     {
+        if (! this.state.playerInitialized) {
+            return false;
+        }
+
         var seconds = this.sanitizeGetSeconds(time);
         this.html.ytPlayer.seekTo(seconds, true)
     }
@@ -123,22 +127,39 @@ class PlayerYouTube extends Player
             this.seek(time);
         }
 
+        if (! this.state.playerInitialized) {
+            return false;
+        }
+
         this.html.ytPlayer.playVideo();
     }
 
     pause()
     {
+        if (! this.state.playerInitialized) {
+            return false;
+        }
+
         this.html.ytPlayer.pauseVideo();
     }
 
     setVolume(vol)
     {
         this.state.volume = vol;
+
+        if (! this.state.playerInitialized) {
+            return;
+        }
+
         this.html.ytPlayer.setVolume(vol);
     }
 
     cuePlaylist(id, index = null, startSeconds = 0, suggestedQuality = null)
     {
+        if (! this.state.playerInitialized) {
+            return false;
+        }
+        
         this.html.ytPlayer.cuePlaylist(id);
     }
 
