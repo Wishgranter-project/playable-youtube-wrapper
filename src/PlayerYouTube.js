@@ -1,5 +1,5 @@
-var Player = require('multimedia-player');
-var loadExternalJs = require('multimedia-player/src/functions.js').loadExternalJs;
+var Player          = require('multimedia-player');
+var loadExternalJs  = require('multimedia-player/src/functions.js').loadExternalJs;
 
 class PlayerYouTube extends Player
 {
@@ -7,7 +7,9 @@ class PlayerYouTube extends Player
     {
         super();
 
-        /*-------------------*/
+        PlayerYouTube.count++;
+
+        //--------------------------
 
         this.settings = this.defaults;
 
@@ -17,33 +19,49 @@ class PlayerYouTube extends Player
             this.settings = {...this.defaults, ...settings};
         }
 
-        PlayerYouTube.count++;
+        //--------------------------
 
         this.settings.wrapperId = this.settings.wrapperId ?
             this.settings.wrapperId :
-            'youtube-wrapper'+PlayerYouTube.count;
+            'youtube-wrapper-'+PlayerYouTube.count;
 
         this.settings.embbedId = this.settings.embbedId ?
             this.settings.embbedId :
-            'youtube-embbeded'+PlayerYouTube.count;
+            'youtube-embbeded-'+PlayerYouTube.count;
 
-        /*-------------------*/
+        //--------------------------
 
-        this.wrapper        = null;     // element wrapping the video
-        this.ytPlayer       = null;     // YT.Player object
-        this.playerReady    = false;    // to start reproducing
+        this.data = null;
 
-        this.data           = null;
-        this.volume         = 100;
-        this.currentTime    = 0;
-        this.follower       = null;     /* YouTube don't provide a timeupdate
-        callback, so a timeinterval must be used instead */
+        //--------------------------
+
+        this.html =
+        {
+            wrapper     : null, // element wrapping the video
+            ytPlayer    : null  // YT.Player object
+        }
+
+        //--------------------------
+
+        // YouTube don't provide a timeupdate
+        // callback, so a timeinterval must be used instead
+        this.follower = null;
+
+        //--------------------------
+
+        this.state.currentTime          = 0;
+        this.state.playerInitialized    = false;
+    }
+
+    get currentTime()
+    {
+        return this.state.currentTime;
     }
 
     get duration()
     {
-        if (this.ytPlayer && this.ytPlayer.getDuration) {
-            return this.ytPlayer.getDuration();
+        if (this.html.ytPlayer && this.html.ytPlayer.getDuration) {
+            return this.html.ytPlayer.getDuration();
         }
 
         return 0;
@@ -51,15 +69,16 @@ class PlayerYouTube extends Player
 
     async setData(data)
     {
-        this.deployRootDiv();
-
         this.data = data;
-
         if (data.href) {
             data.id = PlayerYouTube.getIdFromUrl(data.href);
         }
 
-        this.waiting = true;
+        //--------------------
+
+        this.setUpWrappingDiv();
+
+        this.state.waiting = true;
 
         if (PlayerYouTube.sdkLoaded == false && PlayerYouTube.sdkPromisse == null) {
             PlayerYouTube.sdkPromisse = PlayerYouTube.loadSdk();
@@ -72,75 +91,81 @@ class PlayerYouTube extends Player
             });
         }
 
+        //--------------------
+
         this.startFollowing();
 
-        if (this.playerReady == false) {
+        if (this.state.playerInitialized == false) {
             return this.initializePlayer().then(async () =>
             {
-                this.playerReady = true;
+                this.state.playerInitialized = true;
             });
         }
 
-        this.ytPlayer.loadVideoById(this.data.id);
+        //--------------------
+
+        this.html.ytPlayer.loadVideoById(this.data.id);
         return new Promise(async (success, fail) =>
         {
             success(this);
         });
     }
 
+    seek(time)
+    {
+        var seconds = this.sanitizeGetSeconds(time);
+        this.html.ytPlayer.seekTo(seconds, true)
+    }
+
     play(time = null)
     {
         if (time) {
-            this.setCurrentTime(time);
+            this.seek(time);
         }
-        this.ytPlayer.playVideo();
+
+        this.html.ytPlayer.playVideo();
     }
 
     pause()
     {
-        this.ytPlayer.pauseVideo();
-    }
-
-    setCurrentTime(time)
-    {
-        var seconds = this.sanitizeGetSeconds(time);
-        this.ytPlayer.seekTo(seconds, true)
+        this.html.ytPlayer.pauseVideo();
     }
 
     setVolume(vol)
     {
-        this.volume = vol;
-        this.ytPlayer.setVolume(vol);
+        this.state.volume = vol;
+        this.html.ytPlayer.setVolume(vol);
     }
 
     cuePlaylist(id, index = null, startSeconds = 0, suggestedQuality = null)
     {
-        this.ytPlayer.cuePlaylist(id);
+        this.html.ytPlayer.cuePlaylist(id);
     }
 
     reset()
     {
         this.stopFollowing();
-        if (! this.ytPlayer) {
+        if (! this.html.ytPlayer) {
             return;
         }
 
-        this.ytPlayer.destroy();
-        this.ytPlayer = null;
+        this.html.ytPlayer.destroy();
+        this.html.ytPlayer = null;
     }
 
-    deployRootDiv()
+    setUpWrappingDiv()
     {
-        if (this.wrapper) {
+        if (this.html.wrapper) {
             return true;
         }
 
         var wrap = document.getElementById(this.settings.wrapperId);
 
-        this.wrapper = wrap ?
-            wrap : this.createDiv(this.settings.wrapperId, document.body);
+        this.html.wrapper = wrap ?
+            wrap :
+            this.createDiv(this.settings.wrapperId, document.body);
 
-        this.createDiv(this.settings.embbedId, this.wrapper);
+        this.createDiv(this.settings.embbedId, this.html.wrapper);
     }
 
     async initializePlayer()
@@ -151,29 +176,30 @@ class PlayerYouTube extends Player
             var height  = this.settings.height;
 
             if (this.settings.width == 'auto') {
-                width     = this.wrapper.offsetWidth;
+                width     = this.html.wrapper.offsetWidth;
                 height    = width / 1.77;
             }
 
-            this.ytPlayer = new YT.Player(this.settings.embbedId,
+            this.html.ytPlayer = new YT.Player(this.settings.embbedId,
             {
                 width           : width,
                 height          : height,
                 videoId         : this.data.id,
                 startSeconds    : 0,
-                host:           'https://www.youtube.com',
-                playerVars      : { autoplay: 1, controls: 1 },
+                host            : 'https://www.youtube.com',
+                playerVars      : { autoplay: 1, controls: 0 },
                 events          :
                 {
                     onReady: (event) =>
                     {
                         success(this);
-                        this.callBackOnReady(event);
+                        this.setVolume(this.volume);
                     },
-                    onError: (errorCode) =>
+                    onError: (code) =>
                     {
-                        fail(errorCode);
-                        this.callBackOnError(errorCode);
+                        var message = PlayerYouTube.getErrorDescription(code);
+                        fail(message);
+                        this.onError(code, message);
                     },
                     onStateChange: this.callBackOnStateChange.bind(this)
                 }
@@ -195,110 +221,72 @@ class PlayerYouTube extends Player
 
     following()
     {
-        var t = this.ytPlayer && this.ytPlayer.getCurrentTime ? this.ytPlayer.getCurrentTime() : 0;
+        var t = this.html.ytPlayer && this.html.ytPlayer.getCurrentTime ? this.html.ytPlayer.getCurrentTime() : 0;
 
         if (t != this.currentTime) {
-            this.currentTime = t;
-            this.callBackOnTimeupdate();
+            this.state.currentTime = t;
+            this.onTimeupdate();
         }
     }
 
     /*-------------------*/
 
-    callBackOnReady(event)
-    {
-        this.setVolume(this.volume);
-        this.onReady(event);
-    }
-
     callBackOnStateChange(e)
     {
-        var code = e.data;
+        switch (e.data) {
+            case -1: // -1 unstarted
+                this.state.reproducing    = false;
+                this.state.playing        = false;
+                this.state.paused         = false;
+            break;
+            case 0: // 0 ended
+                this.state.reproducing    = false;
+                this.state.playing        = false;
+                this.state.paused         = true;
+                this.state.waiting        = false;
 
-        switch (code) {
-            case -1:
-                this.log('State change: -1 unstarted');
-                this.reproducing    = false;
-                this.playing        = false;
-                this.paused         = false;
+                this.stopFollowing();
+                this.onEnded();
             break;
-            case 0: /* encerrado */
-                this.log('State change: 0 ended');
-                this.reproducing    = false;
-                this.playing        = false;
-                this.paused         = true;
-                this.waiting        = false;
-                this.callBackOnEnded();
+            case 1: // 1 playing
+                var waiting = this.state.waiting
+
+                this.state.reproducing    = true;
+                this.state.playing        = true;
+                this.state.paused         = false;
+                this.state.buffering      = false;
+                this.state.waiting        = false;
+
+                this.startFollowing();
+
+                if (waiting) {
+                    this.onPlaying();
+                } else {
+                    this.onPlay();
+                }
             break;
-            case 1:
-                this.log('State change: 1 playing');
-                this.reproducing    = true;
-                this.playing        = true;
-                this.paused         = false;
-                this.buffering      = false;
-                this.waiting        = false;
-                this.callbackOnReproducing();
+            case 2: // 2 paused
+                this.state.reproducing    = false;
+                this.state.playing        = false;
+                this.state.paused         = true;
+                this.state.waiting        = false;
+
+                this.onPause();
             break;
-            case 2:
-                this.log('State change: 2 paused');
-                this.reproducing    = false;
-                this.playing        = false;
-                this.paused         = true;
-                this.waiting        = false;
+            case 3: // 3 buffering
+                this.state.reproducing    = false;
+                this.state.playing        = true;
+                this.state.paused         = false;
+                this.state.buffering      = true;
+                this.state.waiting        = true;
+
+                this.onWaiting();
             break;
-            case 3:
-                this.log('State change: 3 buffering');
-                this.reproducing    = false;
-                this.playing        = true;
-                this.paused         = false;
-                this.buffering      = true;
-                this.waiting        = true;
-            break;
-            case 5:
-                this.log('State change: 5 video cued');
-                this.play(0)
+            case 5: // 5 video cued
+                this.play(0);
+                this.onPlay();
             break;
         }
-
-        this.onStateChange(code);
-    }
-
-    callBackOnError(errorCode)
-    {
-        switch (errorCode)
-        {
-            case 2:
-                this.log('Error 2: invalid parameters.');
-            break;
-            case 5:
-                this.log('Error 5: An error related to the HTML5 player occurred.');
-            break;
-            case 100:
-                this.log('Error 100: Video not found.');
-            break;
-            case 101:
-            case 150:
-                this.log('Error 101: The video\'s owner won\'t allow it on embbed players.');
-            break;
-        }
-
-        this.onError(errorCode);
-    }
-
-    callbackOnReproducing()
-    {
-        this.startFollowing();
-    }
-
-    callBackOnEnded()
-    {
-        this.stopFollowing();
-        this.onEnded();
-    }
-
-    callBackOnTimeupdate()
-    {
-        this.onTimeupdate();
     }
 
     createDiv(id, parent)
@@ -346,6 +334,28 @@ PlayerYouTube.loadSdk = async function()
 PlayerYouTube.getIdFromUrl = function(url)
 {
     return url.match(/v=([A-Za-z0-9-_]+)/)[1];
+}
+
+PlayerYouTube.getErrorDescription = function(errorCode)
+{
+    switch (errorCode)
+    {
+        case 2:
+            return 'Error 2: invalid parameters.';
+        break;
+        case 5:
+            return 'Error 5: An error related to the HTML5 player occurred.';
+        break;
+        case 100:
+            return 'Error 100: Video not found.';
+        break;
+        case 101:
+        case 150:
+            return 'Error 101: The video\'s owner won\'t allow it on embbed players.';
+        break;
+    }
+
+    return 'Error '+errorCode+': Unknown error';
 }
 
 module.exports = PlayerYouTube;

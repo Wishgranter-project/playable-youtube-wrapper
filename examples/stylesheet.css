@@ -205,3 +205,30 @@ input[type=range]::-moz-range-track {
                 width: 40px;
                 text-align: center;
             }
+
+/*--------------*/
+
+#log {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    width: 250px;
+    height: 250px;
+    padding: 10px;
+
+    background-color: rgba(0, 0, 0, 0.5)
+}
+
+    #log div {
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+    }
+
+        #log div p {
+            margin: 0px;
+            color: #fff;
+            font-family: 'Courier';
+            font-size: 12px;
+            line-height: 1.3em;
+        }
