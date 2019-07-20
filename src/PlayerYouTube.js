@@ -159,7 +159,7 @@ class PlayerYouTube extends Player
         if (! this.state.playerInitialized) {
             return false;
         }
-        
+
         this.html.ytPlayer.cuePlaylist(id);
     }
 
@@ -354,7 +354,21 @@ PlayerYouTube.loadSdk = async function()
 
 PlayerYouTube.getIdFromUrl = function(url)
 {
-    return url.match(/v=([A-Za-z0-9-_]+)/)[1];
+    var m;
+
+    if (m = url.match(/v=([A-Za-z0-9-_]+)/)) { // rerular ?v=id url
+        return m[1];
+    }
+
+    if (m = url.match(/\.be\/([A-Za-z0-9-_]+)/)) { // short url
+        return m[1];
+    }
+
+    if (m = url.match(/embed\/([A-Za-z0-9-_]+)/)) { // embbed url
+        return m[1];
+    }
+
+    return null;
 }
 
 PlayerYouTube.getErrorDescription = function(errorCode)
