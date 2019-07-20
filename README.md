@@ -4,7 +4,7 @@ Example:
 
 ```js
 var YouTube = require('youtube-wrapper');
-var player 	= new YouTube({wrapperId: 'youtube-div'});
+var player  = new YouTube({wrapperId: 'youtube-div'});
 
 player.setData({href: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'}).then( => 
 {
