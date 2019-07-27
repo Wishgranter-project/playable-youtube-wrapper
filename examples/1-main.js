@@ -12,44 +12,33 @@ document.addEventListener('DOMContentLoaded', function()
 
     window.player                       = new PlayerYouTube({width: 'auto', wrapperId: 'youtube-wrapper'});
 
-    window.player.onPlay                = function()
+    window.player
+    .addEventListener('play',           function()
     {
         log('Play');
-    }
-
-    window.player.onPause               = function()
+    }).addEventListener('pause',        function()
     {
         log('Pause');
-    }
-
-    window.player.onEnded               = function()
+    }).addEventListener('ended',        function()
     {
         log('Ended');
-    }
-
-    window.player.onTimeupdate          = function()
+    }).addEventListener('timeupdate',   function()
     {
         window.currentTime.innerHTML    = this.formattedCurrentTime;
         window.remainingTime.innerHTML  = this.formattedRemainingTime;
         window.progressBar.value        = this.currentPercentage;
-    }
-
-    window.player.onWaiting             = function()
+    }).addEventListener('waiting',      function()
     {
         window.mediaPlayer.classList.add('waiting');
         log('Waiting');
-    }
-
-    window.player.onPlaying             = function()
+    }).addEventListener('playing',      function()
     {
         window.mediaPlayer.classList.remove('waiting');
         log('Playing');
-    }
-
-    window.player.onError              = function(errorCode, errorMessage)
+    }).addEventListener('error',        function(err)
     {
-        log(errorMessage);
-    }
+        log(err.errorMessage);
+    });
 
     //--------------------
 

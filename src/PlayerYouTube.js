@@ -220,7 +220,7 @@ class PlayerYouTube extends Player
                     {
                         var message = PlayerYouTube.getErrorDescription(code);
                         fail(message);
-                        this.onError(code, message);
+                        this.dispatchEvent('error', {errorCode: code, errorMessage: message});
                     },
                     onStateChange: this.callBackOnStateChange.bind(this)
                 }
@@ -246,7 +246,7 @@ class PlayerYouTube extends Player
 
         if (t != this.currentTime) {
             this.state.currentTime = t;
-            this.onTimeupdate();
+            this.dispatchEvent('timeupdate');
         }
     }
 
@@ -267,7 +267,7 @@ class PlayerYouTube extends Player
                 this.state.waiting        = false;
 
                 this.stopFollowing();
-                this.onEnded();
+                this.dispatchEvent('ended');
             break;
             case 1: // 1 playing
                 var waiting = this.state.waiting
@@ -281,9 +281,9 @@ class PlayerYouTube extends Player
                 this.startFollowing();
 
                 if (waiting) {
-                    this.onPlaying();
+                    this.dispatchEvent('playing');
                 } else {
-                    this.onPlay();
+                    this.dispatchEvent('play');
                 }
             break;
             case 2: // 2 paused
@@ -292,7 +292,7 @@ class PlayerYouTube extends Player
                 this.state.paused         = true;
                 this.state.waiting        = false;
 
-                this.onPause();
+                this.dispatchEvent('pause');
             break;
             case 3: // 3 buffering
                 this.state.reproducing    = false;
@@ -301,11 +301,11 @@ class PlayerYouTube extends Player
                 this.state.buffering      = true;
                 this.state.waiting        = true;
 
-                this.onWaiting();
+                this.dispatchEvent('waiting');
             break;
             case 5: // 5 video cued
                 this.play(0);
-                this.onPlay();
+                this.dispatchEvent('play');
             break;
         }
     }
