@@ -1,9 +1,9 @@
 {
   "name": "youtube-wrapper",
   "author": "Adinan Cenci <adinancenci@protonmail.com>",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "This is a wrapper for the YouTube embed api.",
-  "main": "src/PlayerYouTube.js",
+  "main": "index.js",
   "directories": {
     "example": "examples"
   },
@@ -14,18 +14,20 @@
     "type": "git",
     "url": "git+https://github.com/adinan-cenci/js-youtube-wrapper.git"
   },
-  "keywords": [],
-  "author": "",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/adinan-cenci/js-youtube-wrapper/issues"
   },
   "homepage": "https://github.com/adinan-cenci/js-youtube-wrapper#readme",
   "devDependencies": {
-    "webpack": "^4.35.3",
-    "webpack-cli": "^3.3.6"
+    "gulp": "^4.0.2",
+    "gulp-rename": "^2.0.0",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4",
+    "webpack-stream": "^7.0.0",
+    "y2be-player": "^3.5.4"
   },
   "dependencies": {
-    "multimedia-player-interface": "github:adinan-cenci/js-multimedia-player-interface"
+    "multimedia-player-interface": "git+ssh://git@github.com:adinan-cenci/js-multimedia-player-interface.git#3.1"
   }
 }

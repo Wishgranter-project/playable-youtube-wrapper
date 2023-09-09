@@ -3,18 +3,14 @@ This an implementation of my [multimedia player interface](https://github.com/ad
 Example:
 
 ```js
-var YouTube = require('youtube-wrapper');
-var player  = new YouTube({wrapperId: 'youtube-div'});
+import PlayerYouTube from 'youtube-wrapper';
+customElements.define('youtube-player', PlayerYouTube);
 
-player.setData({href: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'}).then( => 
+var player = document.createElement('youtube-player');
+player.videoId = 'dQw4w9WgXcQ';
+
+player.appendTo(document.body).then(() => 
 {
-   player.play();                                                                        
-});
+    player.play();
+})
 ```
-
-```html
-<div id="youtube-div">
-    <!-- YouTube iframe here -->
-</div>
-```
-

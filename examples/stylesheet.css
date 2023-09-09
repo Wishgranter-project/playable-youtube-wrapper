@@ -137,6 +137,15 @@ input[type=range]::-moz-range-track {
                     line-height: 1em;
                     color: #526066;
                 }
+    
+    #youtube-wrapper {
+        
+    }
+
+        #youtube-wrapper youtube-player {
+            display: block;
+            width: 100%;
+        }
 
     #buttons {
         display: flex;
