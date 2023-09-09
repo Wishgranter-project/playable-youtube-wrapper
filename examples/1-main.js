@@ -1,56 +1,39 @@
-var PlayerYouTube = require('../src/PlayerYouTube.js');
+import PlayerYouTube from '../src/PlayerYouTube.js';
+
+customElements.define('youtube-player', PlayerYouTube);
 
 document.addEventListener('DOMContentLoaded', function()
 {
-    window.mediaPlayer                  = document.getElementById('media-player');
-    window.currentTime                  = document.getElementById('current-time');
-    window.remainingTime                = document.getElementById('remaining-time');
-    window.progressBar                  = document.getElementById('progress-bar');
-    window.logWindow                    = document.querySelector('#log div');
+    window.mediaPlayer   = document.getElementById('media-player');
+    window.currentTime   = document.getElementById('current-time');
+    window.remainingTime = document.getElementById('remaining-time');
+    window.progressBar   = document.getElementById('progress-bar');
+    window.logWindow     = document.querySelector('#log div');
+    window.wrapper       = document.getElementById('youtube-wrapper');
+    window.volume        = 15;
 
     //--------------------
 
-    window.player                       = new PlayerYouTube({width: 'auto', wrapperId: 'youtube-wrapper'});
-
-    window.player
-    .addEventListener('play',           function()
+    document.getElementById('toggle-play-pause').addEventListener('click', function() 
     {
-        log('Play');
-    }).addEventListener('pause',        function()
-    {
-        log('Pause');
-    }).addEventListener('ended',        function()
-    {
-        log('Ended');
-    }).addEventListener('timeupdate',   function()
-    {
-        window.currentTime.innerHTML    = this.formattedCurrentTime;
-        window.remainingTime.innerHTML  = this.formattedRemainingTime;
-        window.progressBar.value        = this.currentPercentage;
-    }).addEventListener('waiting',      function()
-    {
-        window.mediaPlayer.classList.add('waiting');
-        log('Waiting');
-    }).addEventListener('playing',      function()
-    {
-        window.mediaPlayer.classList.remove('waiting');
-        log('Playing');
-    }).addEventListener('error',        function(err)
-    {
-        log(err.errorMessage);
+        window.player.toggle();
     });
-
-    //--------------------
-
-    document.getElementById('toggle-play-pause').addEventListener('click', window.player.toggle.bind(window.player));
 
     document.querySelectorAll('#media-list a').forEach(function(a)
     {
         a.addEventListener('click', function(e)
         {
             e.preventDefault();
-            window.player.setData({href:this.attributes.href.value}).then(() =>
+
+            if (window.player) {
+                window.player.pause();
+                window.player.remove();
+            }
+
+            window.player = newPlayer(this.attributes.href.value);
+            window.player.appendTo(window.wrapper).then(() =>
             {
+                window.player.setVolume(window.volume);
                 window.player.play();
             });
 
@@ -62,19 +45,69 @@ document.addEventListener('DOMContentLoaded', function()
     document.getElementById('progress-bar').addEventListener('click', function(e)
     {
         var x, width, perc;
-        x               = e.clientX - this.offsetLeft;
-        width           = this.offsetWidth;
-        perc            = Math.ceil((x / width) * 100)+'%';
+        x     = e.clientX - this.offsetLeft;
+        width = this.offsetWidth;
+        perc  = Math.ceil((x / width) * 100)+'%';
 
         window.player.seek(perc)
     });
 
+    document.getElementById('volume-slider').value = window.volume;
     document.getElementById('volume-slider').addEventListener('change', function()
     {
-        var v = parseInt(this.value);
-        window.player.setVolume(v);
+        window.volume = parseInt(this.value);
+        window.player.setVolume(window.volume);
     });
 });
+
+function newPlayer(url) 
+{
+    var player = document.createElement('youtube-player');
+    player.src = url;
+    player.width = 'auto';
+
+    player
+    .addEventListener('player:play', function()
+    {
+        log('Play');
+    })
+    
+    player.addEventListener('player:pause', function()
+    {
+        log('Pause');
+    })
+    
+    player.addEventListener('player:ended', function()
+    {
+        log('Ended');
+    })
+    
+    player.addEventListener('player:timeupdate', function()
+    {
+        window.currentTime.innerHTML    = this.currentTimeFormatted;
+        window.remainingTime.innerHTML  = this.remainingTimeFormatted;
+        window.progressBar.value        = this.currentTimePercentage;
+    })
+    
+    player.addEventListener('player:waiting', function()
+    {
+        window.mediaPlayer.classList.add('waiting');
+        log('Waiting');
+    })
+    
+    player.addEventListener('player:playing', function()
+    {
+        window.mediaPlayer.classList.remove('waiting');
+        log('Playing');
+    })
+    
+    player.addEventListener('player:error', function(evt)
+    {
+        log(evt.detail.errorMessage);
+    });
+
+    return player;
+}
 
 function log(msg)
 {
