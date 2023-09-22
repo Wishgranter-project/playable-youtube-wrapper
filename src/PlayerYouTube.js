@@ -33,6 +33,13 @@ class PlayerYouTube extends Foundation
 
     connectedCallback() 
     {
+        if (!this.html.embed) {
+            this.setUp();
+        }
+    }
+
+    setUp() 
+    {
         var src, videoId, width, height;
 
         this.html.embed = this.createDiv(this.settings.embbedId, this);
@@ -71,9 +78,27 @@ class PlayerYouTube extends Foundation
     /**
      * @inheritdoc
      */
-    appendTo(element) 
+    appendTo(parentElement) 
     {
-        element.append(this);
+        parentElement.append(this);
+        return this.readyToPlayPromise;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    prependTo(parentElement)
+    {
+        parentElement.prepend(this);
+        return this.readyToPlayPromise;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    appendAfter(siblingElement)
+    {
+        siblingElement.after(this);
         return this.readyToPlayPromise;
     }
 
@@ -248,6 +273,7 @@ class PlayerYouTube extends Foundation
                 this.state.isPlaying        = false;
                 this.state.isPaused         = true;
                 this.state.isWaiting        = false;
+                this.state.isEnded          = true;
 
                 this.stopFollowing();
                 this.fireEvent('player:ended');
@@ -260,6 +286,7 @@ class PlayerYouTube extends Foundation
                 this.state.isPaused         = false;
                 this.state.isBuffering      = false;
                 this.state.isWaiting        = false;
+                this.state.isEnded          = false;
 
                 this.startFollowing();
 

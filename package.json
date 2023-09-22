@@ -1,7 +1,7 @@
 {
   "name": "youtube-wrapper",
   "author": "Adinan Cenci <adinancenci@protonmail.com>",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "This is a wrapper for the YouTube embed api.",
   "main": "index.js",
   "directories": {
@@ -28,6 +28,6 @@
     "y2be-player": "^3.5.4"
   },
   "dependencies": {
-    "multimedia-player-interface": "git+ssh://git@github.com:adinan-cenci/js-multimedia-player-interface.git#3.1"
+    "multimedia-player-interface": "git+ssh://git@github.com:adinan-cenci/js-multimedia-player-interface.git#3.2"
   }
 }

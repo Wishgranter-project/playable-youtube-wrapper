@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.1.0 - 2023-09-22
+## Added
+- `preppendTo()` and `appendAfter()`.
+
+### Fixed
+- Read only property `.isEnded` turns true when the reproduction is over.
+
+---
+
 ## 3.0.0
 ### Changed
 - Rewriten for the new version of the interface.
