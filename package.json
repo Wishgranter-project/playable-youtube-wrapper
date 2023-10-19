@@ -8,7 +8,8 @@
     "example": "examples"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate-docs": "jsdoc ./src --configure jsdoc.json --verbose"
   },
   "repository": {
     "type": "git",
@@ -20,14 +21,16 @@
   },
   "homepage": "https://github.com/adinan-cenci/js-youtube-wrapper#readme",
   "devDependencies": {
+    "clean-jsdoc-theme": "^4.2.14",
     "gulp": "^4.0.2",
     "gulp-rename": "^2.0.0",
+    "jsdoc": "^4.0.2",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4",
     "webpack-stream": "^7.0.0",
     "y2be-player": "^3.5.4"
   },
   "dependencies": {
-    "multimedia-player-interface": "git+ssh://git@github.com:adinan-cenci/js-multimedia-player-interface.git#3.2"
+    "playable": "git+ssh://git@github.com:adinan-cenci/playable.git#4"
   }
 }
