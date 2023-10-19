@@ -1,6 +1,6 @@
-import PlayerYouTube from '../src/PlayerYouTube.js';
+import PlayableYouTube from '../src/PlayableYouTube.js';
 
-customElements.define('youtube-player', PlayerYouTube);
+customElements.define('youtube-player', PlayableYouTube);
 
 document.addEventListener('DOMContentLoaded', function()
 {

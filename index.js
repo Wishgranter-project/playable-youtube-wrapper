@@ -1,4 +1,4 @@
 
-import PlayerYouTube from './src/PlayerYouTube.js';
+import PlayableYouTube from './src/PlayableYouTube.js';
 
-export default PlayerYouTube;
+export default PlayableYouTube;

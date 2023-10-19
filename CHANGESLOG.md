@@ -2,8 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+
+## 4.0.0 - 2023-10-19
+
+### Changed
+- Renamed the library.
+- Player does not play by default.
+- How the dimensions of the player are calculated.
+
+### Added
+- `.autoplay` property.
+
+### Fixed
+- Player would try to instantiate the youtube widget before the library was actually loaded.
+- `.play()` actually returns a promise as per interface.
+
+---
+
 ## 3.1.0 - 2023-09-22
-## Added
+### Added
 - `preppendTo()` and `appendAfter()`.
 
 ### Fixed

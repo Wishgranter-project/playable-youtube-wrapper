@@ -5,14 +5,15 @@ import Playable, { Helpers } from 'playable';
 /**
  * @inheritdoc
  */
-class PlayerYouTube extends Playable 
+class PlayableYouTube extends Playable 
 {
     static sdkLoaded  = false;
     static sdkLoading = false;
     static sdkPromise = null;
     static defaults   = {
         width:  640,
-        height: null
+        height: 'auto',
+        autoplay: false
     }
 
     constructor() 
@@ -27,7 +28,7 @@ class PlayerYouTube extends Playable
             id:        null,
         }
 
-        this.settings = {...PlayerYouTube.defaults, ...settings};
+        this.settings = {...PlayableYouTube.defaults, ...settings};
 
         this.html = {}
 
@@ -40,7 +41,7 @@ class PlayerYouTube extends Playable
             return;
         }
 
-        var src, videoId, width, height;
+        var src, videoId, width, height, autoplay;
 
         this.html.embed = this.createDiv(this.settings.embbedId, this);
 
@@ -60,7 +61,11 @@ class PlayerYouTube extends Playable
             this.height = height;
         }
 
-        return this.readyToPlayPromise = PlayerYouTube.loadSdk().then( () => 
+        if (autoplay = this.getAttribute('autoplay')) {
+            this.autoplay = ['true', '1'].includes(autoplay);
+        }
+
+        return this.readyToPlayPromise = PlayableYouTube.loadSdk().then( () => 
         {
             return this.initializePlayer();
         });
@@ -68,8 +73,8 @@ class PlayerYouTube extends Playable
 
     remove() 
     {
-        if (this.html.ytPlayer) {
-            this.html.ytPlayer.destroy();
+        if (this.html.ytWidget) {
+            this.html.ytWidget.destroy();
         }
 
         super.remove();
@@ -80,7 +85,7 @@ class PlayerYouTube extends Playable
      */
     appendTo(parentElement) 
     {
-        parentElement.append(this);
+        parentElement.append(this); // connectedCallback()
         return this.readyToPlayPromise;
     }
 
@@ -89,7 +94,7 @@ class PlayerYouTube extends Playable
      */
     prependTo(parentElement)
     {
-        parentElement.prepend(this);
+        parentElement.prepend(this); // connectedCallback()
         return this.readyToPlayPromise;
     }
 
@@ -98,13 +103,13 @@ class PlayerYouTube extends Playable
      */
     appendAfter(siblingElement)
     {
-        siblingElement.after(this);
+        siblingElement.after(this); // connectedCallback()
         return this.readyToPlayPromise;
     }
 
     set src(src) 
     {
-        this.settings.id = PlayerYouTube.getIdFromUrl(src);
+        this.settings.id = PlayableYouTube.getIdFromUrl(src);
     }
 
     set videoId(videoId) 
@@ -114,37 +119,62 @@ class PlayerYouTube extends Playable
 
     set width(width) 
     {
-        this.settings.width = parseInt(width);
+        this.settings.width = width;
         this.updateDimensions();
     }
 
     set height(height) 
     {
-        this.settings.height = parseInt(height);
+        this.settings.height = height;
         this.updateDimensions();
+    }
+
+    set autoplay(autoplay) 
+    {
+        this.settings.autoplay = autoplay;
+    }
+
+    calculateDimensions() 
+    {
+        var width   = this.settings.width;
+        var height  = this.settings.height;
+        var actualWidth, actualHeight;
+
+        if (width == 'auto') {
+            actualWidth = this.parentNode.offsetWidth > 400
+                ? 400
+                : this.parentNode.offsetWidth;
+        } else if (typeof width == 'string' && width.indexOf('%') > -1) {
+            actualWidth = parseInt(width);
+            actualWidth = parseInt((this.parentNode.offsetWidth / 100) * actualWidth);
+        } else {
+            actualWidth = width;
+        }
+
+        if (height == 'auto') {
+            actualHeight = parseInt(actualWidth / 1.77);
+        } else if (typeof height == 'string' && height.indexOf('%') > -1) {
+            actualHeight = parseInt(height);
+            actualHeight = parseInt((this.parentNode.offsetHeight / 100) * actualHeight);
+        } else {
+            actualHeight = height;
+        }
+
+        return { actualWidth, actualHeight };
     }
 
     updateDimensions() 
     {
-        if (!this.html.ytPlayer) {
+        if (!this.html.ytWidget) {
             return;
         }
 
-        var width   = this.settings.width;
-        var height  = this.settings.height;
+        var iframe = this.html.ytWidget.getIframe();
 
-        width = width == 'auto' || width == '100%'
-            ? this.offsetWidth
-            : width;
+        var { actualWidth, actualHeight } = this.calculateDimensions();
 
-        height = height == null
-            ? width / 1.77
-            : height;
-
-        var iframe = this.html.ytPlayer.getIframe();
-
-        iframe.width = width;
-        iframe.height = height;
+        iframe.style.width  = actualWidth + 'px';
+        iframe.style.height = actualHeight + 'px';
     }
 
     /**
@@ -160,8 +190,8 @@ class PlayerYouTube extends Playable
      */
     get duration()
     {
-        return this.html.ytPlayer && this.html.ytPlayer.getDuration
-            ? this.html.ytPlayer.getDuration()
+        return this.html.ytWidget && this.html.ytWidget.getDuration
+            ? this.html.ytWidget.getDuration()
             : 0;
     }
 
@@ -175,7 +205,7 @@ class PlayerYouTube extends Playable
         }
 
         var seconds = this.sanitizeGetSeconds(time);
-        this.html.ytPlayer.seekTo(seconds, true)
+        this.html.ytWidget.seekTo(seconds, true)
     }
 
     /**
@@ -187,11 +217,15 @@ class PlayerYouTube extends Playable
             this.seek(time);
         }
 
-        if (! this.state.playerInitialized) {
-            return false;
-        }
-
-        this.html.ytPlayer.playVideo();
+        return new Promise((success, fail) =>
+        {
+            if (! this.state.playerInitialized) {
+                return fail('Player has not been initialized');
+            }
+            
+            this.html.ytWidget.playVideo();
+            return success();
+        });
     }
 
     /**
@@ -203,7 +237,7 @@ class PlayerYouTube extends Playable
             return false;
         }
 
-        this.html.ytPlayer.pauseVideo();
+        this.html.ytWidget.pauseVideo();
     }
 
     /**
@@ -217,38 +251,30 @@ class PlayerYouTube extends Playable
             return;
         }
 
-        this.html.ytPlayer.setVolume(vol);
+        this.html.ytWidget.setVolume(vol);
     }
 
     /**
      * @private
      *
      * @returns {Promise}
+     *   To be resolved once the player is ready to play ( not to reproduce ).
      */
     async initializePlayer()
     {
         return new Promise(async (success, fail) =>
         {
-            var width   = this.settings.width;
-            var height  = this.settings.height;
+            var { actualWidth, actualHeight } = this.calculateDimensions();
 
-            width = width == 'auto'
-                ? this.offsetWidth
-                : width;
-
-            height = height == null
-                ? width / 1.77
-                : height;
-
-            this.html.ytPlayer = new YT.Player(this.settings.embbedId,
+            this.html.ytWidget = new YT.Player(this.settings.embbedId,
             {
-                width           : width,
-                height          : height,
+                width           : actualWidth,
+                height          : actualHeight,
                 videoId         : this.settings.id,
                 startSeconds    : 0,
-                host            : 'https://www.youtube.com',
+              /*host            : 'https://www.youtube.com',*/
                 playerVars      : {
-                    autoplay: 1,
+                    autoplay: this.settings.autoplay,
                     controls: 0
                 },
                 events          :
@@ -261,7 +287,7 @@ class PlayerYouTube extends Playable
                     },
                     onError: (error) =>
                     {
-                        var message = PlayerYouTube.getErrorDescription(error.data);
+                        var message = PlayableYouTube.getErrorDescription(error.data);
                         fail(message);
                         this.fireEvent('player:error', {errorCode: error.data, errorMessage: message});
                     },
@@ -365,8 +391,8 @@ class PlayerYouTube extends Playable
      */
     following()
     {
-        var t = this.html.ytPlayer && this.html.ytPlayer.getCurrentTime 
-            ? this.html.ytPlayer.getCurrentTime() 
+        var t = this.html.ytWidget && this.html.ytWidget.getCurrentTime 
+            ? this.html.ytWidget.getCurrentTime() 
             : 0;
 
         if (t != this.currentTime) {
@@ -448,27 +474,27 @@ class PlayerYouTube extends Playable
     static async loadSdk()
     {
         // Already loaded.
-        if (PlayerYouTube.sdkLoaded) {
+        if (PlayableYouTube.sdkLoaded) {
             return new Promise(async (success, fail) => { success(); });
         }
 
         // Already loaded.
-        if (PlayerYouTube.sdkDefined()) {
-            PlayerYouTube.sdkLoaded = true;
+        if (PlayableYouTube.sdkDefined()) {
+            PlayableYouTube.sdkLoaded = true;
             return new Promise(async (success, fail) => { success(); });
         }
 
         // Called previously, stil loading though.
-        if (PlayerYouTube.sdkLoading) {
-            return PlayerYouTube.sdkPromise;
+        if (PlayableYouTube.sdkLoading) {
+            return PlayableYouTube.sdkPromise;
         }
 
-        PlayerYouTube.sdkLoading = true;
-        return PlayerYouTube.sdkPromise = new Promise(async (success, fail) =>
+        PlayableYouTube.sdkLoading = true;
+        return PlayableYouTube.sdkPromise = new Promise(async (success, fail) =>
         {
             Helpers.loadExternalJs('https://www.youtube.com/iframe_api').then(
-                PlayerYouTube.loadSdkSuccess(success),
-                PlayerYouTube.loadSdkFail(fail)
+                PlayableYouTube.loadSdkSuccess(success),
+                PlayableYouTube.loadSdkFail(fail)
             );
         });
     }
@@ -494,15 +520,14 @@ class PlayerYouTube extends Playable
     {
         return () => 
         {
-            PlayerYouTube.waiter = setInterval(() =>
+            PlayableYouTube.waiter = setInterval(() =>
                 {
-                    if (PlayerYouTube.sdkDefined()) {
-                        PlayerYouTube.sdkLoaded = true;
-                        clearInterval(PlayerYouTube.waiter);
-                        PlayerYouTube.sdkLoading = false;
-                        success('YouTube SDK ready');
+                    if (PlayableYouTube.sdkDefined()) {
+                        PlayableYouTube.sdkLoaded = true;
+                        clearInterval(PlayableYouTube.waiter);
+                        PlayableYouTube.sdkLoading = false;
+                        return success('YouTube SDK ready');
                     }
-                    
                 }, 500
             );
         }
@@ -516,8 +541,8 @@ class PlayerYouTube extends Playable
     {
         return () => 
         {
-            PlayerYouTube.sdkLoading = false;
-            fail('Error loading SDK');
+            PlayableYouTube.sdkLoading = false;
+            return fail('Error loading SDK');
         }
     }
 
@@ -541,4 +566,4 @@ class PlayerYouTube extends Playable
     }
 }
 
-export default PlayerYouTube;
+export default PlayableYouTube;

@@ -1,9 +1,12 @@
-This an implementation of my [multimedia player interface](https://github.com/adinan-cenci/js-multimedia-player-interface) around the [YouTube Embbed API](https://developers.google.com/youtube/iframe_api_reference).
+# Playable youtube wrapper
+
+This is a wrapper for the the [YouTube Embbed API](https://developers.google.com/youtube/iframe_api_reference), an 
+implementation of my [playable interface](https://github.com/adinan-cenci/playable).
 
 Example:
 
 ```js
-import PlayerYouTube from 'youtube-wrapper';
+import PlayerYouTube from 'playable-youtube-wrapper';
 customElements.define('youtube-player', PlayerYouTube);
 
 var player = document.createElement('youtube-player');

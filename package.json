@@ -1,7 +1,8 @@
 {
-  "name": "youtube-wrapper",
+  "name": "playable-youtube-wrapper",
   "author": "Adinan Cenci <adinancenci@protonmail.com>",
-  "version": "3.1.0",
+  "version": "4.0.0",
+  "license": "MIT",
   "description": "This is a wrapper for the YouTube embed api.",
   "main": "index.js",
   "directories": {
@@ -13,18 +14,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/adinan-cenci/js-youtube-wrapper.git"
+    "url": "git+https://github.com/adinan-cenci/playable-youtube-wrapper.git"
   },
-  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/adinan-cenci/js-youtube-wrapper/issues"
+    "url": "https://github.com/adinan-cenci/playable-youtube-wrapper/issues"
   },
-  "homepage": "https://github.com/adinan-cenci/js-youtube-wrapper#readme",
+  "homepage": "https://github.com/adinan-cenci/playable-youtube-wrapper#readme",
   "devDependencies": {
-    "clean-jsdoc-theme": "^4.2.14",
     "gulp": "^4.0.2",
     "gulp-rename": "^2.0.0",
-    "jsdoc": "^4.0.2",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4",
     "webpack-stream": "^7.0.0",
