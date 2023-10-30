@@ -1,5 +1,7 @@
 import PlayableYouTube from '../src/PlayableYouTube.js';
 
+window.PlayableYouTube = PlayableYouTube;
+
 customElements.define('youtube-player', PlayableYouTube);
 
 document.addEventListener('DOMContentLoaded', function()
@@ -67,41 +69,41 @@ function newPlayer(url)
     player.width = '100%';
 
     player
-    .addEventListener('player:play', function()
+    .addEventListener('playable:play', function()
     {
         log('Play');
     })
     
-    player.addEventListener('player:pause', function()
+    player.addEventListener('playable:pause', function()
     {
         log('Pause');
     })
     
-    player.addEventListener('player:ended', function()
+    player.addEventListener('playable:ended', function()
     {
         log('Ended');
     })
     
-    player.addEventListener('player:timeupdate', function()
+    player.addEventListener('playable:timeupdate', function()
     {
         window.currentTime.innerHTML    = this.currentTimeFormatted;
         window.remainingTime.innerHTML  = this.remainingTimeFormatted;
         window.progressBar.value        = this.currentTimePercentage;
     })
     
-    player.addEventListener('player:waiting', function()
+    player.addEventListener('playable:waiting', function()
     {
         window.mediaPlayer.classList.add('waiting');
         log('Waiting');
     })
     
-    player.addEventListener('player:playing', function()
+    player.addEventListener('playable:playing', function()
     {
         window.mediaPlayer.classList.remove('waiting');
         log('Playing');
     })
     
-    player.addEventListener('player:error', function(evt)
+    player.addEventListener('playable:error', function(evt)
     {
         log(evt.detail.errorMessage);
     });

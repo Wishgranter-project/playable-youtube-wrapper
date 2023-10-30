@@ -7,12 +7,12 @@ import Playable, { Helpers } from 'playable';
  */
 class PlayableYouTube extends Playable 
 {
-    static sdkLoaded  = false;
-    static sdkLoading = false;
-    static sdkPromise = null;
-    static defaults   = {
-        width:  640,
-        height: 'auto',
+    static sdkLoaded       = false;
+    static sdkLoading      = false;
+    static sdkPromise      = null;
+    static defaultSettings = {
+        width:    640,
+        height:  'auto',
         autoplay: false
     }
 
@@ -23,16 +23,13 @@ class PlayableYouTube extends Playable
         this.state.currentTime = 0;
         this.state.playerInitialized = false;
 
-        var settings = {
-            embbedId:  'youtube-embbed-'  + Math.floor(Math.random() * 10000),
-            id:        null,
-        }
+        this.settings          = PlayableYouTube.defaultSettings;
+        this.settings.embbedId = 'youtube-embbed-'  + Math.floor(Math.random() * 10000);
+        this.settings.id       = null;
 
-        this.settings = {...PlayableYouTube.defaults, ...settings};
+        this.html              = {}
 
-        this.html = {}
-
-        this.follower = null;
+        this.follower          = null;
     }
 
     connectedCallback() 
@@ -289,7 +286,7 @@ class PlayableYouTube extends Playable
                     {
                         var message = PlayableYouTube.getErrorDescription(error.data);
                         fail(message);
-                        this.fireEvent('player:error', {errorCode: error.data, errorMessage: message});
+                        this.fireEvent('playable:error', {errorCode: error.data, errorMessage: message});
                     },
                     onStateChange: this.callBackOnStateChange.bind(this)
                 }
@@ -318,7 +315,7 @@ class PlayableYouTube extends Playable
                 this.state.isEnded          = true;
 
                 this.stopFollowing();
-                this.fireEvent('player:ended');
+                this.fireEvent('playable:ended');
             break;
             case 1: // playing
                 var waiting = this.state.isWaiting
@@ -333,9 +330,9 @@ class PlayableYouTube extends Playable
                 this.startFollowing();
 
                 if (waiting) {
-                    this.fireEvent('player:playing');
+                    this.fireEvent('playable:playing');
                 } else {
-                    this.fireEvent('player:play');
+                    this.fireEvent('playable:play');
                 }
             break;
             case 2: // paused
@@ -344,7 +341,7 @@ class PlayableYouTube extends Playable
                 this.state.isPaused         = true;
                 this.state.isWaiting        = false;
 
-                this.fireEvent('player:pause');
+                this.fireEvent('playable:pause');
             break;
             case 3: // buffering
                 this.state.isReproducing    = false;
@@ -353,11 +350,11 @@ class PlayableYouTube extends Playable
                 this.state.isBuffering      = true;
                 this.state.isWaiting        = true;
 
-                this.fireEvent('player:waiting');
+                this.fireEvent('playable:waiting');
             break;
             case 5: // video cued
                 this.play(0);
-                this.fireEvent('player:play');
+                this.fireEvent('playable:play');
             break;
         }
     }
@@ -387,7 +384,7 @@ class PlayableYouTube extends Playable
      *
      * @private
      *
-     * @fires Playable#player:timeupdate
+     * @fires Playable#playable:timeupdate
      */
     following()
     {
@@ -397,7 +394,7 @@ class PlayableYouTube extends Playable
 
         if (t != this.currentTime) {
             this.state.currentTime = t;
-            this.fireEvent('player:timeupdate');
+            this.fireEvent('playable:timeupdate');
         }
     }
 
@@ -478,12 +475,6 @@ class PlayableYouTube extends Playable
             return new Promise(async (success, fail) => { success(); });
         }
 
-        // Already loaded.
-        if (PlayableYouTube.sdkDefined()) {
-            PlayableYouTube.sdkLoaded = true;
-            return new Promise(async (success, fail) => { success(); });
-        }
-
         // Called previously, stil loading though.
         if (PlayableYouTube.sdkLoading) {
             return PlayableYouTube.sdkPromise;
@@ -492,58 +483,20 @@ class PlayableYouTube extends Playable
         PlayableYouTube.sdkLoading = true;
         return PlayableYouTube.sdkPromise = new Promise(async (success, fail) =>
         {
-            Helpers.loadExternalJs('https://www.youtube.com/iframe_api').then(
-                PlayableYouTube.loadSdkSuccess(success),
-                PlayableYouTube.loadSdkFail(fail)
+            Helpers.loadExternalJs('https://www.youtube.com/iframe_api', 'YT.Player').then(
+                () => 
+                {
+                    PlayableYouTube.sdkLoaded = true;
+                    PlayableYouTube.sdkLoading = false;
+                    return success('YouTube SDK ready');
+                },
+                () => 
+                {
+                    PlayableYouTube.sdkLoading = false;
+                    return fail('Error loading SDK');
+                }
             );
         });
-    }
-
-    /**
-     * Checks if the youtube sdk is defined.
-     *
-     * @static
-     * @private
-     * 
-     * @return {bool}
-     */
-    static sdkDefined() 
-    {
-        return typeof YT != 'undefined' && typeof YT.Player !== 'undefined';
-    }
-
-    /**
-     * @static
-     * @private 
-     */
-    static loadSdkSuccess(success) 
-    {
-        return () => 
-        {
-            PlayableYouTube.waiter = setInterval(() =>
-                {
-                    if (PlayableYouTube.sdkDefined()) {
-                        PlayableYouTube.sdkLoaded = true;
-                        clearInterval(PlayableYouTube.waiter);
-                        PlayableYouTube.sdkLoading = false;
-                        return success('YouTube SDK ready');
-                    }
-                }, 500
-            );
-        }
-    }
-
-    /**
-     * @static
-     * @private 
-     */
-    static loadSdkFail(fail) 
-    {
-        return () => 
-        {
-            PlayableYouTube.sdkLoading = false;
-            return fail('Error loading SDK');
-        }
     }
 
     /**

@@ -1,5 +1,7 @@
 import PlayableYouTube from '../src/PlayableYouTube.js';
 
+window.PlayableYouTube = PlayableYouTube;
+
 customElements.define('youtube-player', PlayableYouTube);
 
 document.addEventListener('DOMContentLoaded', function()
