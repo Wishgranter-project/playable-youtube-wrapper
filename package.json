@@ -14,12 +14,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/adinan-cenci/playable-youtube-wrapper.git"
+    "url": "git+https://github.com/wishgranter-project/playable-youtube-wrapper.git"
   },
   "bugs": {
-    "url": "https://github.com/adinan-cenci/playable-youtube-wrapper/issues"
+    "url": "https://github.com/wishgranter-project/playable-youtube-wrapper/issues"
   },
-  "homepage": "https://github.com/adinan-cenci/playable-youtube-wrapper#readme",
+  "homepage": "https://github.com/wishgranter-project/playable-youtube-wrapper#readme",
   "devDependencies": {
     "gulp": "^4.0.2",
     "gulp-rename": "^2.0.0",
@@ -29,6 +29,6 @@
     "y2be-player": "^3.5.4"
   },
   "dependencies": {
-    "playable": "git+ssh://git@github.com:adinan-cenci/playable.git#5"
+    "playable": "git+ssh://git@github.com:wishgranter-project/playable.git#5"
   }
 }

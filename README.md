@@ -1,7 +1,7 @@
 # Playable youtube wrapper
 
 This is a wrapper for the the [YouTube Embbed API](https://developers.google.com/youtube/iframe_api_reference), an 
-implementation of my [playable interface](https://github.com/adinan-cenci/playable).
+implementation of my [playable interface](https://github.com/wishgranter-project/playable).
 
 Example:
 
